@@ -1,0 +1,44 @@
+name: Projekt
+version: ${project.version}
+main: de.chaosmatter.xcricksprojekt.Projekt
+api-version: 1.16
+authors: [ Chaosmatter ]
+
+commands:
+  freeze:
+
+
+  spawn:
+
+
+  setspawn:
+
+
+  spectate:
+
+
+  spec:
+
+
+  stadt:
+
+
+  kick:
+
+
+  ban:
+
+
+  teleport:
+
+
+  tp:
+
+
+  unban:
+
+
+  live:
+
+
+  vote:
