@@ -22,8 +22,6 @@ public final class Projekt extends JavaPlugin {
     @Getter
     private LiveCommand liveCommand;
     @Getter
-    private VoteManager voteManager;
-    @Getter
     private PlayerHelper playerHelper;
     @Override
     public void onEnable() {
@@ -31,7 +29,6 @@ public final class Projekt extends JavaPlugin {
         data = new Data(this);
         tablistManager = new TablistManager(this);
         liveCommand = new LiveCommand(this);
-        voteManager = new VoteManager(this);
         playerHelper = new PlayerHelper(this);
         // Plugin startup logic
         this.getLogger().setLevel(Level.ALL);
@@ -48,7 +45,6 @@ public final class Projekt extends JavaPlugin {
         getCommand("tp").setExecutor(new TeleportCommand(this));
         getCommand("unban").setExecutor(new UnbanCommand(this));
         getCommand("live").setExecutor(new LiveCommand(this));
-        getCommand("vote").setExecutor(new VoteCommand(this));
 
         Bukkit.getPluginManager().registerEvents(new PlayerCommandPreprocessListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this), this);
