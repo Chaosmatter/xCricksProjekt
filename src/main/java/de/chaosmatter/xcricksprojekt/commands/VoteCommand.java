@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class VoteCommand implements CommandExecutor {
     private final Projekt plugin;
@@ -56,6 +58,9 @@ public class VoteCommand implements CommandExecutor {
                             }
                             this.plugin.getVoteManager().startVote(args[1], candidate);
                             player.sendMessage(this.plugin.getPrefix() + "§eDu hast die Wahlen für " + args[1] + " gestartet!");
+                            HashMap<UUID, Integer> map = new HashMap<UUID, Integer>();
+                            map.put(player.getUniqueId(), 1);
+                            map.keySet().forEach(uuid -> this.plugin.getConfig().set("mutes." + uuid, map.get(map)));
                             for (Player all : Bukkit.getServer().getOnlinePlayers()) {
                                 if (PermissionsEx.getUser(all).inGroup(args[1].toLowerCase())) {
                                     all.sendMessage(this.plugin.getPrefix() + "Die Wahlen für " + args[1] + " wurden gestartet! Nutze /vote run um dich zur Wahl zu stellen, und /vote, um Personen zu wählen!");
@@ -68,14 +73,14 @@ public class VoteCommand implements CommandExecutor {
                                 player.sendMessage(this.plugin.getPrefix() + "§cFür diese Stadt ist aktuell keine Wahl aktiv!");
                                 return false;
                             }
-                            Player winner = this.plugin.getVoteManager().stopVote(args[1]);
-                            if(!PermissionsEx.getUser(winner).inGroup("bürgermeister")) {
-                                PermissionsEx.getUser(winner).addGroup("bürgermeister");
-                                //todo remove old Bürgermeister from config.yml
-                            }
+                            //Player winner = this.plugin.getVoteManager().stopVote(args[1]);
+                            //if(!PermissionsEx.getUser(winner).inGroup("bürgermeister")) {
+                              //  PermissionsEx.getUser(winner).addGroup("bürgermeister");
+                                ////todo remove old Bürgermeister from config.yml
+                          //  }
                             for (Player all : Bukkit.getServer().getOnlinePlayers()) {
                                 if (PermissionsEx.getUser(all).inGroup(args[1].toLowerCase())) {
-                                    all.sendMessage(this.plugin.getPrefix() + "§e" + winner.getName() + " §7wurde zum Bürgermeister gewählt!");
+                                   // all.sendMessage(this.plugin.getPrefix() + "§e" + winner.getName() + " §7wurde zum Bürgermeister gewählt!");
                                 }
                             }
                             return false;

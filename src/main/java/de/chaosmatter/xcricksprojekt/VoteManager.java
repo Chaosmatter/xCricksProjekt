@@ -2,6 +2,7 @@ package de.chaosmatter.xcricksprojekt;
 
 import com.avaje.ebean.validation.NotNull;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -16,113 +17,58 @@ public class VoteManager {
     public VoteManager(Projekt plugin) {
         this.plugin = plugin;
     }
-    public HashMap<UUID, Integer> candidates = new HashMap<>();
 
-    public Player stopVote(String stadt) {
-        int max = Collections.max(this.loadHashMap(stadt).values());
-        List<UUID> keys = new ArrayList<>();
-        for (Map.Entry<UUID, Integer> entry : this.loadHashMap(stadt).entrySet()) {
-            if (entry.getValue()==max) {
-                keys.add(entry.getKey());
-            }
-        }
-
-        Player player = Bukkit.getPlayer(keys.get(0));
+    public void stopVote(String stadt) {
 
         File file = new File("plugins/Projekt/" + stadt + ".yml");
         file.delete();
 
-        return player;
     }
 
     public void startVote(String stadt, Player candidate) {
-        System.out.println("1");
-        this.candidates.put(candidate.getUniqueId(), 1);
-        System.out.println("2");
-        try {
-            this.getVoteFile(stadt).save(new File("plugins/Projekt/" + stadt + ".yml"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println("3");
-        this.saveHashMap(this.candidates, this.plugin.getPlayerHelper().getStadt(candidate.getUniqueId()));
-        try {
-            YamlConfiguration yamlConfiguration1 = YamlConfiguration.loadConfiguration(new File("plugins/Projekt/" + stadt + "yml"));
-            yamlConfiguration1.save(new File("plugins/Projekt/" + stadt + ".yml"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        System.out.println("4");
-        this.candidates.remove(candidate.getUniqueId());
-        System.out.println("5");
+
+        Map<UUID, Integer> map = new HashMap<UUID, Integer>();
+        map.put(candidate.getUniqueId(), 1);
+        this.setPlayerVoted(candidate.getUniqueId());
+        map.keySet().forEach(key -> this.plugin.getConfig().set("votes." + stadt + "." + key, map.get(map)));
+        this.plugin.saveConfig();
     }
 
     public void setPlayerRun(UUID uuid) {
-        if(this.loadHashMap(this.plugin.getPlayerHelper().getStadt(uuid)) == null) {
-            this.candidates.put(uuid, 1);
-            this.saveHashMap(this.candidates, this.plugin.getPlayerHelper().getStadt(uuid));
-            return;
-        }
-        this.loadHashMap(this.plugin.getPlayerHelper().getStadt(uuid)).put(uuid, this.loadHashMap(this.plugin.getPlayerHelper().getStadt(uuid)).get(uuid) + 1);
-        this.saveHashMap(this.candidates, this.plugin.getPlayerHelper().getStadt(uuid));
+        HashMap<UUID, Integer> map = new HashMap<UUID, Integer>();
     }
 
     public void votePlayer(UUID uuid) {
-        this.loadHashMap(this.plugin.getPlayerHelper().getStadt(uuid)).put(uuid, this.loadHashMap(this.plugin.getPlayerHelper().getStadt(uuid)).get(uuid) + 1);
+
     }
 
     public void setPlayerVoted(UUID uuid) {
-        String playersVoted = this.getVoteFile(this.plugin.getPlayerHelper().getStadt(uuid)).getString("playersVoted");
+        String playersVoted = this.plugin.getConfig().getString("playersvoted." + this.plugin.getPlayerHelper().getStadt(uuid));
         if(playersVoted == null) {
-            this.getVoteFile(this.plugin.getPlayerHelper().getStadt(uuid)).set("playersVoted", uuid.toString());
+            this.plugin.getConfig().set("playersVoted." + this.plugin.getPlayerHelper().getStadt(uuid), uuid.toString());
             return;
+        } else {
+            this.plugin.getConfig().set("playersVoted.", playersVoted + ", " + uuid.toString());
         }
-        this.getVoteFile(this.plugin.getPlayerHelper().getStadt(uuid)).set("playersVoted", playersVoted + ", " + uuid.toString());
+            this.plugin.saveConfig();
     }
 
-    public void saveHashMap(HashMap<UUID, Integer> candidates, String stadt) {
-        for (Object key : candidates.keySet()) {
-            System.out.println("6");
-            this.getVoteFile(stadt).set("HashMap." + key, candidates.get(key));
-            System.out.println("7");
-        }
-        try {
-            this.getVoteFile(stadt).save(new File("plugins/Projekt/" + stadt + ".yml"));
-            System.out.println("8");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 
-    public HashMap<UUID, Integer> loadHashMap(String stadt) {
-        HashMap<UUID, Integer> candidates = new HashMap<UUID, Integer>();
 
-        for (String key : this.getVoteFile(stadt).getConfigurationSection("HashMap").getKeys(false)) {
-            candidates.put(UUID.fromString(key), this.getVoteFile(stadt).getInt("HashMap."+key));
-        }
-
-        return candidates;
-    }
 
 
         public boolean hasVoted(UUID uuid) {
-        YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(new File(this.plugin.getPlayerHelper().getStadt(uuid) + ".yml"));
-        if(yamlConfiguration.getString("hasVoted") == null) {
+        if(this.plugin.getConfig().getString("hasVoted." + this.plugin.getPlayerHelper().getStadt(uuid)) == null) {
             return false;
         }
-        if(yamlConfiguration.getString("hasVoted").contains(uuid.toString())) {
+        if(this.plugin.getConfig().getString("hasVoted." + this.plugin.getPlayerHelper().getStadt(uuid)).contains(uuid.toString())) {
             return true;
         }
         return false;
     }
 
-    public YamlConfiguration getVoteFile(String stadt) {
-        return YamlConfiguration.loadConfiguration(new File("plugins/Projekt/" + stadt + ".yml"));
-    }
-
     public boolean isVoteActive(String stadt) {
-        File file = new File(stadt + ".yml");
-        if(file.exists()) {
+        if(this.plugin.getConfig().getString("playersVoted." + stadt) != null) {
             return true;
         }
         return false;
